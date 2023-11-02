@@ -14,20 +14,24 @@ int main(int agrc, char *argv[])
         char *line = NULL;
         size_t len = 0; // size of the buffer
 
-        printf("Enter a line of text: ");
+        printf("wish>\t");
 
         // getline will allocate memory for the line
         ssize_t read = getline(&line, &len, stdin);
-
+        
         if (read != -1)
         {
+            // build in commands 
+           
             line[strcspn(line, "\n")] = '\0';
-            printf("You entered: %s", line);
+            if (strcmp("exit", line ) == 0) {
+                exit(0);
+            }
+            //printf("you entered %s", line);
             int rc = fork();
 
             if (rc == 0)
             {
-                printf("child process\n");
                 // Use asprintf to dynamically allocate memory for the path
                 char *path;
                 if (asprintf(&path, "%s/%s", defaultPath, line) == -1)
@@ -40,7 +44,7 @@ int main(int agrc, char *argv[])
 
                 cmd_argv[0] = strdup(path);
                 cmd_argv[1] = NULL;
-                printf("%s", cmd_argv[0]);
+                //printf("%s", cmd_argv[0]);
                 execv(cmd_argv[0], cmd_argv);
                 printf("exec failed");
             }
