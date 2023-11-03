@@ -3,9 +3,18 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 const char *defaultPath = "/bin";
+/*
+    TODO:
 
+    - add built-in commands, loop and parallel
+    - check for edge cases
+    - add ability for read in a bash file that has mulitple commands, and execute those commands
+    - reroute outputs to a file
+    - add your own make file to practice compiling multiple files and linking them together
+*/
 int main(int agrc, char *argv[])
 {
 
@@ -18,35 +27,53 @@ int main(int agrc, char *argv[])
 
         // getline will allocate memory for the line
         ssize_t read = getline(&line, &len, stdin);
-        
+
         if (read != -1)
         {
-            // build in commands 
-           
-            line[strcspn(line, "\n")] = '\0';
-            if (strcmp("exit", line ) == 0) {
+            // build in commands
+
+            if (strcmp("exit\n", line) == 0)
+            {
                 exit(0);
             }
-            //printf("you entered %s", line);
+
             int rc = fork();
 
             if (rc == 0)
             {
-                // Use asprintf to dynamically allocate memory for the path
-                char *path;
-                if (asprintf(&path, "%s/%s", defaultPath, line) == -1)
+                // parse input
+                printf("%s\n", line);
+                char *token, *string, *tofree;
+
+                tofree = string = strdup(line);
+                assert(string != NULL);
+                int k = 0;
+                char *cmd_argv[10];
+                while ((token = strsep(&string, " ")) != NULL)
+                {
+                    // printf("%s\n", token);
+                    cmd_argv[k] = token;
+                    cmd_argv[k][strcspn(cmd_argv[k], "\n")] = '\0';
+                    k++;
+                }
+                cmd_argv[k] = NULL;
+
+                if (asprintf(&cmd_argv[0], "%s/%s", defaultPath, cmd_argv[0]) == -1)
                 {
                     fprintf(stderr, "Memory allocation error\n");
                     return 1; // exit with an error code
                 }
+                for (int i = 0; cmd_argv[i] != NULL; i++)
+                {
+                    printf("Argument %d: %s\n", i, cmd_argv[i]);
+                }
 
-                char *cmd_argv[10];
-
-                cmd_argv[0] = strdup(path);
-                cmd_argv[1] = NULL;
-                //printf("%s", cmd_argv[0]);
+                cmd_argv[k] = NULL;
                 execv(cmd_argv[0], cmd_argv);
-                printf("exec failed");
+                free(tofree);
+
+                printf("exec failed\n");
+                exit(0);
             }
             else if (rc > 0)
             {
