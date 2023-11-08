@@ -49,6 +49,7 @@ int main(int agrc, char *argv[])
                 assert(string != NULL);
                 int k = 0;
                 char *cmd_argv[10];
+                char *orginalCommand;
                 while ((token = strsep(&string, " ")) != NULL)
                 {
                     // printf("%s\n", token);
@@ -56,6 +57,7 @@ int main(int agrc, char *argv[])
                     cmd_argv[k][strcspn(cmd_argv[k], "\n")] = '\0';
                     k++;
                 }
+                orginalCommand = strdup(cmd_argv[0]);
                 cmd_argv[k] = NULL;
 
                 if (asprintf(&cmd_argv[0], "%s/%s", defaultPath, cmd_argv[0]) == -1)
@@ -68,11 +70,18 @@ int main(int agrc, char *argv[])
                     printf("Argument %d: %s\n", i, cmd_argv[i]);
                 }
 
-                cmd_argv[k] = NULL;
-                execv(cmd_argv[0], cmd_argv);
+                if (!access(cmd_argv[0], F_OK))
+                {
+                    execv(cmd_argv[0], cmd_argv);
+                    printf("exec failed\n");
+                }
+                else
+                {
+                    printf("built in function");
+                }
+
                 free(tofree);
 
-                printf("exec failed\n");
                 exit(0);
             }
             else if (rc > 0)
