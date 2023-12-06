@@ -1,6 +1,6 @@
 #ifndef IO_H
-#define IO
+#define IO_H
 
-void loadFile()
+void removeWhiteSpace(char *str);
 
 #endif
