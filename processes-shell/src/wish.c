@@ -7,11 +7,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdbool.h>
+
+// My stuff
 #include "linkedlist.h"
 #include "cliHelpers.h"
 #include "constants.h"
-#include "io.h"
-#include <stdbool.h>
+#include "shellCommands.h"
+#include "builtInCommands.h"
 
 char *defaultPath = "";
 
@@ -46,127 +49,11 @@ char *defaultPath = "";
 
 */
 
-void executeShellCommand(char **cmd_argv, int loopNum)
-{
-    int rc;
-    for (int i = 0; i < loopNum; i++)
-    {
-        rc = fork();
-
-        if (rc == 0)
-        {
-            execv(cmd_argv[0], cmd_argv);
-            printf("exec failed\n");
-        }
-        else if (rc > 0)
-        {
-            (void)wait(NULL);
-            printf("parent running\n");
-            // free(tofree);
-        }
-        else
-        {
-            printf("failed\n");
-        }
-    }
-}
-bool checkIfShellCommand(char **command, char *paths[PATHNAMESIZE])
-{
-    char *tempCommand = strdup(*command);
-    for (int i = 0; i < PATHSIZE; i++)
-    {
-        if (asprintf(&tempCommand, "%s/%s", paths[i], *command) == -1)
-        {
-            fprintf(stderr, "Memory allocation error\n");
-            free(tempCommand);
-            return false; // exit with an error code
-        }
-
-        if (access(tempCommand, F_OK) == 0)
-        {
-            printf("add path to command %s\n", tempCommand);
-            *command = strdup(tempCommand);
-            free(tempCommand);
-            printf("add path to command %s\n", *command);
-            return true;
-        }
-    }
-    return false;
-}
-
-void runBuiltInCommand(int numCliArgs, char **cmd_argv, char *paths[PATHNAMESIZE])
-{
-
-    if (strcmp(cmd_argv[0], "cd") == 0) // TODO: DEAL WITH WHITE SPACE
-    {
-        char s[100];
-        // Printing the current working directory
-        printf("%s\n", getcwd(s, 100));
-        if (numCliArgs == 1)
-        {
-            cmd_argv[1] = getenv("HOME");
-        }
-        if (numCliArgs > 2)
-        {
-            printf("this is an error for cd syntax\n");
-            return;
-        }
-        if (chdir(cmd_argv[1]) != 0)
-        {
-            perror("chdir() to  failed");
-        }
-        printf("%s\n", getcwd(s, 100));
-    }
-    else if (strcmp(cmd_argv[0], "path") == 0)
-    {
-        printf("enetering path\n");
-
-        // Free existing paths
-        for (int i = 0; i < PATHSIZE; i++)
-        {
-            if (paths[i] != NULL)
-            {
-                free(paths[i]);
-                paths[i] = NULL;
-            }
-        }
-
-        for (int i = 1; cmd_argv[i] != NULL; i++)
-        {
-            if (i - 1 < PATHSIZE)
-            {
-                paths[i - 1] = strdup(cmd_argv[i]);
-            }
-
-            printf("temp command: %s\n", paths[i - 1]);
-        }
-    }
-    else if (strcmp(cmd_argv[0], "loop") == 0)
-    {
-        char **temp = cmd_argv + 2;
-
-        // for (int i = 0; i < 10; i++)
-        // {
-        //     printf("\ncmd_argv: %s\n", cmd_argv[i]);
-        // }
-
-        // Execute the command directly in the loop
-        if (checkIfShellCommand(temp, paths))
-        {
-            executeShellCommand(temp, atoi(cmd_argv[1]));
-        }
-    }
-    else
-    {
-        printf("\n\nERROR ---> command not found\n\n");
-    }
-}
-
 int main(int agrc, char *argv[])
 {
     // char *b = malloc(4 * sizeof(char *));
     char *paths[PATHSIZE] = {NULL};
-    int numCliArgs = 0;
+    int numCLIArgs = 0;
     /* Now, lets work on b */
     for (int i = 0; i < PATHSIZE; i++)
     {
@@ -205,7 +92,7 @@ int main(int agrc, char *argv[])
 
         while ((characters = getline(&buffer, &bufsize, fp) != -1))
         {
-            numCliArgs = parseInput(cmd_argv, buffer);
+            numCLIArgs = parseInput(cmd_argv, buffer);
             orginalCommand = strdup(cmd_argv[0]);
 
             if (checkIfShellCommand(&cmd_argv[0], paths))
@@ -218,7 +105,7 @@ int main(int agrc, char *argv[])
             {
                 cmd_argv[0] = orginalCommand;
 
-                runBuiltInCommand(numCliArgs, cmd_argv, paths);
+                runBuiltInCommand(numCLIArgs, cmd_argv, paths);
             }
         }
         if (buffer)
@@ -228,6 +115,7 @@ int main(int agrc, char *argv[])
 
         return 0;
     }
+
     while (1)
     {
         for (int i = 0; i < 10; i++)
@@ -248,29 +136,22 @@ int main(int agrc, char *argv[])
             {
                 exit(0);
             }
-            numCliArgs = parseInput(cmd_argv, line);
-
-            if (numCliArgs == -1)
+            numCLIArgs = parseInput(cmd_argv, line);
+            if (numCLIArgs == -1)
             {
                 perror("cli parse error");
             }
-            // for (int i = 0; i < PATHSIZE; i++)
-            // {
-            //     printf("second path name %s \n", paths[i]);
-            // }
             orginalCommand = strdup(cmd_argv[0]);
 
             if (checkIfShellCommand(&cmd_argv[0], paths))
             {
-                printf("\nthis is the command we want to run %s", cmd_argv[0]);
                 free(orginalCommand);
                 executeShellCommand(cmd_argv, 1);
             }
             else
             {
                 cmd_argv[0] = orginalCommand;
-
-                runBuiltInCommand(numCliArgs, cmd_argv, paths);
+                runBuiltInCommand(numCLIArgs, cmd_argv, paths);
             }
         }
         else
@@ -292,44 +173,6 @@ int main(int agrc, char *argv[])
                 printf("%d\n", fd);
 
 */
-
-// if (agrc > 1)
-// {
-//     printf("batch file\n");
-//     FILE *fp;
-
-//     fp = open(argv[1], "r");
-//     if (fp != NULL)
-//     {
-//         printf("file exists!\n");
-//     }
-//     else
-//     {
-//         fp = fopen(argv[1], "w");
-//         assert(fp);
-//     }
-//     char *buffer;
-//     size_t bufsize = 0;
-//     size_t characters;
-
-//     buffer = (char *)malloc(bufsize * sizeof(char));
-//     if (buffer == NULL)
-//     {
-//         perror("Unable to allocate buffer\n");
-//         exit(1);
-//     }
-//     fp = fopen(argv[1], "r");
-
-//     while ((characters = getline(&buffer, &bufsize, fp) != -1))
-//     {
-//         int k = parseInput(&cmd_argv, buffer)
-//     }
-//     if (buffer)
-//     {
-//         free(buffer);
-//     }
-//     return 0;
-// }
 
 // change to a do while
 
