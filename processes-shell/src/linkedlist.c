@@ -51,10 +51,10 @@ void push(char *pathName, List *list)
 void printList(List *datalist)
 {
     Node *temp = datalist->header;
-    printf("Print List: \n");
+    // printf("Print List: \n");
     while (temp != NULL)
     {
-        printf("--> %s \n", temp->filename);
+        // printf("--> %s \n", temp->filename);
         temp = temp->next;
     }
 }

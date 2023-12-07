@@ -6,5 +6,5 @@
 void removeWhiteSpace(char *str);
 bool checkIfShellCommand(char **command, char *paths[PATHNAMESIZE]);
 void executeShellCommand(char **cmd_argv, int loopNum);
-
+void printToFile(char *filename);
 #endif

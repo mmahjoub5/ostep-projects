@@ -7,28 +7,24 @@
 
 void builtin_cd(char **cmd_argv, int numCLIArgs)
 {
-    char s[100];
-    // Printing the current working directory
-    printf("%s\n", getcwd(s, 100));
     if (numCLIArgs == 1)
     {
         cmd_argv[1] = getenv("HOME");
     }
     if (numCLIArgs > 2)
     {
-        printf("this is an error for cd syntax\n");
+        // ////////printf("this is an error for cd syntax\n");
         return;
     }
     if (chdir(cmd_argv[1]) != 0)
     {
         perror("chdir() to  failed");
     }
-    printf("%s\n", getcwd(s, 100));
 }
 
 void builtin_path(char **cmd_argv, char *paths[PATHNAMESIZE])
 {
-    printf("enetering path\n");
+    // printf("enetering path\n");
 
     // Free existing paths
     for (int i = 0; i < PATHSIZE; i++)
@@ -47,7 +43,7 @@ void builtin_path(char **cmd_argv, char *paths[PATHNAMESIZE])
             paths[i - 1] = strdup(cmd_argv[i]);
         }
 
-        printf("temp command: %s\n", paths[i - 1]);
+        // printf("temp command: %s\n", paths[i - 1]);
     }
 }
 
@@ -78,6 +74,6 @@ void runBuiltInCommand(int numCLIArgs, char **cmd_argv, char *paths[PATHNAMESIZE
     }
     else
     {
-        printf("\n\nERROR ---> command not found\n\n");
+        // printf("\n\nERROR ---> command not found\n\n");
     }
 }

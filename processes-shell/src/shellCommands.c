@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 void removeWhiteSpace(char *str)
 {
@@ -35,17 +36,17 @@ bool checkIfShellCommand(char **command, char *paths[PATHNAMESIZE])
     {
         if (asprintf(&tempCommand, "%s/%s", paths[i], *command) == -1)
         {
-            fprintf(stderr, "Memory allocation error\n");
+            // printf(stderr, "Memory allocation error\n");
             free(tempCommand);
             return false; // exit with an error code
         }
 
         if (access(tempCommand, F_OK) == 0)
         {
-            printf("add path to command %s\n", tempCommand);
+            // printf("add path to command %s\n", tempCommand);
             *command = strdup(tempCommand);
             free(tempCommand);
-            printf("add path to command %s\n", *command);
+            // printf("add path to command %s\n", *command);
             return true;
         }
     }
@@ -72,13 +73,24 @@ void executeShellCommand(char **cmd_argv, int loopNum)
         }
         else if (rc > 0)
         {
+
             (void)wait(NULL);
-            printf("parent running\n");
-            // free(tofree);
+
+            // printf("parent running\n");
+            //  free(tofree);
         }
         else
         {
-            printf("failed\n");
+            // printf("failed\n");
         }
     }
 }
+
+// void printToFile(char *filename)
+// {
+//     // print to a file
+//     printf("%d\n", STDOUT_FILENO);
+//     (void)close(STDOUT_FILENO);
+//     int fd = open("test.txt", O_WRONLY, S_IRWXU | O_CREAT | O_TRUNC);
+//     printf("%d\n", fd);
+// }

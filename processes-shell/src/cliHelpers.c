@@ -8,7 +8,7 @@
 int parseInput(char **cmd_argv, char *line)
 {
     // parse input
-    printf("%s\n", line);
+    printf("line %s\n", line);
     char *token, *buffer, *tofree;
 
     tofree = buffer = strdup(line);
@@ -28,10 +28,11 @@ int parseInput(char **cmd_argv, char *line)
         k++;
     }
     cmd_argv[k] = NULL;
-    free(tofree);
-    // *cmd_argv = cmd_argv_local;
 
-    printf("k valuue :%i", k);
+    if (tofree)
+    {
+        free(tofree);
+    }
 
     return k;
 }
