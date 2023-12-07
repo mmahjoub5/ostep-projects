@@ -166,6 +166,10 @@ int main(int agrc, char *argv[])
         // Don't forget to free the allocated memory
         free(line);
     }
+    for (int i = 0; i < PATHSIZE; i++)
+    {
+        free(cmd_argv[i]);
+    }
     free(cmd_argv);
 }
 
