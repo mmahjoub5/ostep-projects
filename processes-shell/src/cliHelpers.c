@@ -8,7 +8,7 @@
 int parseInput(char **cmd_argv, char *line)
 {
     // parse input
-    printf("line %s\n", line);
+    
     char *token, *buffer, *tofree;
 
     tofree = buffer = strdup(line);

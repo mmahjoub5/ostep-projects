@@ -32,7 +32,21 @@ int main(int agrc, char *argv[])
         }
     }
 
-    paths[0] = "/bin";
-    char *command = "ls";
+    strncpy(paths[0], "/bin", PATHNAMESIZE - 1);
+    paths[0][PATHNAMESIZE - 1] = '\0'; // Ensure null-termination
+
+    char *command = strdup("ls");
     printf("%d\n", checkIfShellCommand(&command, paths));
+
+
+    for(int i = 0; i < PATHSIZE; i++)
+    {
+        free(paths[i]);
+    }
+
+    if (command)
+    {
+        free(command);
+    }
+
 }

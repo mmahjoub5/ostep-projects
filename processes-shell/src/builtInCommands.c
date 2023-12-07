@@ -4,16 +4,21 @@
 #include <unistd.h>
 #include <stdio.h>
 #include "shellCommands.h"
+#include <ctype.h> 
+
 
 void builtin_cd(char **cmd_argv, int numCLIArgs)
 {
-    if (numCLIArgs == 1)
+    if (numCLIArgs == 1 || isspace(cmd_argv[1][0]))
     {
-        cmd_argv[1] = getenv("HOME");
+        // cmd_argv[1] = getenv("HOME");
+        fprintf(stderr, "An error has occurred\n");
+        return;
     }
     if (numCLIArgs > 2)
     {
         // ////////printf("this is an error for cd syntax\n");
+        fprintf(stderr, "An error has occurred\n");
         return;
     }
     if (chdir(cmd_argv[1]) != 0)
@@ -31,7 +36,6 @@ void builtin_path(char **cmd_argv, char *paths[PATHNAMESIZE])
     {
         if (paths[i] != NULL)
         {
-            free(paths[i]);
             paths[i] = NULL;
         }
     }
