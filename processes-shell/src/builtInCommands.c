@@ -7,7 +7,7 @@
 #include <ctype.h> 
 
 
-void builtin_cd(char **cmd_argv, int numCLIArgs)
+static void builtin_cd(char **cmd_argv, int numCLIArgs)
 {
     if (numCLIArgs == 1 || isspace(cmd_argv[1][0]))
     {
@@ -27,7 +27,7 @@ void builtin_cd(char **cmd_argv, int numCLIArgs)
     }
 }
 
-void builtin_path(char **cmd_argv, char *paths[PATHNAMESIZE])
+static void builtin_path(char **cmd_argv, char *paths[PATHNAMESIZE])
 {
     // printf("enetering path\n");
 
@@ -51,7 +51,7 @@ void builtin_path(char **cmd_argv, char *paths[PATHNAMESIZE])
     }
 }
 
-void builtin_loop(char **cmd_argv, char *paths[PATHNAMESIZE])
+static void builtin_loop(char **cmd_argv, char *paths[PATHNAMESIZE])
 {
     char **temp = cmd_argv + 2;
     // Execute the command directly in the loop
@@ -60,6 +60,19 @@ void builtin_loop(char **cmd_argv, char *paths[PATHNAMESIZE])
         executeShellCommand(temp, atoi(cmd_argv[1]));
     }
 }
+
+static void builtin_exit(int numCLIArgs)
+{
+    if(numCLIArgs > 1)
+    {
+        fprintf(stderr, "An error has occurred\n");
+    }
+    else 
+    {
+        exit(0);
+    }
+}
+
 
 void runBuiltInCommand(int numCLIArgs, char **cmd_argv, char *paths[PATHNAMESIZE])
 {
@@ -76,7 +89,11 @@ void runBuiltInCommand(int numCLIArgs, char **cmd_argv, char *paths[PATHNAMESIZE
     {
         builtin_loop(cmd_argv, paths);
     }
-    else
+    else if (strcmp(cmd_argv[0], "exit") == 0)
+    {
+        builtin_exit(numCLIArgs);
+    }
+else
     {
         // printf("\n\nERROR ---> command not found\n\n");
     }
