@@ -32,6 +32,7 @@ void removeWhiteSpace(char *str)
 bool checkIfShellCommand(char **command, char *paths[PATHNAMESIZE])
 {
     char *tempCommand = strdup(*command);
+
     for (int i = 0; i < PATHSIZE; i++)
     {
         if (asprintf(&tempCommand, "%s/%s", paths[i], *command) == -1)

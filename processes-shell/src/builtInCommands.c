@@ -9,7 +9,7 @@ void builtin_cd(char **cmd_argv, int numCLIArgs)
 {
     if (numCLIArgs == 1)
     {
-        cmd_argv[1] = getenv("HOME");
+        perror("")
     }
     if (numCLIArgs > 2)
     {
