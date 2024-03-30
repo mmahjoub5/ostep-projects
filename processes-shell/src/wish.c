@@ -46,12 +46,6 @@ char *defaultPath = "";
 
 int main(int agrc, char *argv[])
 {
-    printf("are we working here??, %d\n", agrc);
-    for (int i = 0; i < agrc; i++)
-    {
-
-        printf("cmd inputs: %s\n", argv[i]);
-    }
 
     // char *b = malloc(4 * sizeof(char *));
     char *paths[PATHSIZE] = {NULL};
@@ -81,7 +75,11 @@ int main(int agrc, char *argv[])
         FILE *fp;
 
         fp = fopen(argv[agrc - 1], "r+");
-
+        if(fp ==0)
+        {
+            perror("unable to open file");
+            return 1;
+        }
         char *buffer;
         size_t bufsize = 0;
         size_t characters;
@@ -96,7 +94,6 @@ int main(int agrc, char *argv[])
         while ((characters = getline(&buffer, &bufsize, fp) != -1))
         {
             numCLIArgs = parseInput(cmd_argv, buffer);
-            printf("cmd args%s", cmd_argv[0]);
             orginalCommand = strdup(cmd_argv[0]);
             if (checkIfShellCommand(&cmd_argv[0], paths))
             {
@@ -109,6 +106,7 @@ int main(int agrc, char *argv[])
                 cmd_argv[0] = orginalCommand;
 
                 runBuiltInCommand(numCLIArgs, cmd_argv, paths);
+                free(orginalCommand);
             }
         }
         if (buffer)
@@ -121,7 +119,6 @@ int main(int agrc, char *argv[])
 
     while (1)
     {
-        printf("are we working here??");
         for (int i = 0; i < 10; i++)
         {
             cmd_argv[i] = strdup("");
