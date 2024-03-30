@@ -9,75 +9,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/sysctl.h>
+#include "../header/parser.h"
+#include "../header/threadHelpers.h"
 
 #define LISTSIZE 2048
-#define NUMTHREADS 1
-
-typedef struct
-{
-    int number;
-    char letter;
-} compressedNode;
-
-typedef struct
-{
-    char *start;
-    size_t size;
-    int thread_id;
-} ThreadArgs;
-
-typedef struct
-{
-    compressedNode **list;
-    size_t capacity;
-    size_t size;
-} ThreadReturnArgs;
+#define NUMTHREADS 4
 
 ThreadReturnArgs results[NUMTHREADS];
 pthread_mutex_t result_mutex;
-ThreadReturnArgs initializeThreadReturnArgs()
-{
-    ThreadReturnArgs returnArgs;
-    returnArgs.list = NULL;
-    returnArgs.capacity = 0;
-    returnArgs.size = 0;
-    return returnArgs;
-}
-
-void addToThreadReturnArgs(ThreadReturnArgs *returnArgs, compressedNode *node)
-{
-    // check if the size of the array is at capacity
-    if (returnArgs->size == returnArgs->capacity)
-    {
-        if (returnArgs->size == 0)
-        {
-            returnArgs->capacity = 1;
-        }
-        else
-        {
-            returnArgs->capacity = 2 * returnArgs->size;
-        }
-        returnArgs->list = realloc(returnArgs->list, returnArgs->capacity * sizeof(compressedNode *));
-        if (returnArgs->list == NULL)
-        {
-            perror("realloc");
-            exit(EXIT_FAILURE);
-        }
-        // Add the new node to the list
-        returnArgs->list[returnArgs->size] = node;
-        returnArgs->size++;
-    }
-}
-
-void freeReturnArgs(ThreadReturnArgs returnArgs)
-{
-    for (int i = 0; i < returnArgs.size; i++)
-    {
-        free(returnArgs.list[i]);
-    }
-    free(returnArgs.list);
-}
-
 void showCpuCores()
 {
     int numCPU;
@@ -93,56 +32,6 @@ void showCpuCores()
     printf("Number of CPU cores: %d\n", numCPU);
 }
 
-compressedNode *initializeCompressedNode(int number, char letter)
-{
-    compressedNode *node = malloc(sizeof(compressedNode *));
-    node->number = number;
-    node->letter = letter;
-    return node;
-}
-
-void compress(ThreadReturnArgs *returnArgs, char *str)
-{
-    size_t length = strlen(str);
-    // printf("size of string %zu", length);
-    int counter = 0;
-    char prev = str[0];
-
-    for (int i = 0; i < length; i++)
-    {
-        printf("%c", str[i]);
-        if (prev == str[i])
-        {
-            counter++;
-            if (i == length - 1)
-            {
-
-                pthread_mutex_lock(&result_mutex);
-                printf("adding %c\n", prev);
-                addToThreadReturnArgs(returnArgs, initializeCompressedNode(counter, prev));
-                pthread_mutex_unlock(&result_mutex);
-            }
-        }
-        else if (prev != str[i] && i == length - 1)
-        {
-            pthread_mutex_lock(&result_mutex);
-            addToThreadReturnArgs(returnArgs, initializeCompressedNode(counter, prev));
-            addToThreadReturnArgs(returnArgs, initializeCompressedNode(1, str[i]));
-            pthread_mutex_unlock(&result_mutex);
-        }
-        else
-        {
-            pthread_mutex_lock(&result_mutex);
-            printf("adding %c\n", prev);
-            addToThreadReturnArgs(returnArgs, initializeCompressedNode(counter, str[i]));
-            pthread_mutex_unlock(&result_mutex);
-            counter = 1;
-        }
-
-        prev = str[i];
-    }
-}
-
 void *runThread(void *arg)
 {
     ThreadArgs *args = (ThreadArgs *)arg;
@@ -150,7 +39,7 @@ void *runThread(void *arg)
     // printf("\nprint sizes %zu\n", (size_t)args->size);
     // printf("\n thread id: %i \n", args->thread_id);
     // printf("\n string: %s \n", args->start);
-    compress(&results[args->thread_id], args->start);
+    compress(&results[args->thread_id], args->start, &result_mutex);
 
     return NULL;
 }
@@ -188,7 +77,7 @@ int main(int argc, char *argv[])
     close(fd);
 
     size_t chunkSize = sb.st_size / NUMTHREADS;
-    // printf("chunksize %zu", chunkSize);
+    printf("chunksize %zu", chunkSize);
     pthread_t threads[NUMTHREADS];
     ThreadArgs *threadArgs[NUMTHREADS];
     for (int i = 0; i < NUMTHREADS; i++)
@@ -221,9 +110,6 @@ int main(int argc, char *argv[])
         }
         threadArgs[i]->start[k] = '\0';
         k = 0;
-        // Print size information (optional)
-        // printf("Thread %d: Start = %p, Size = %zu\n", i, threadArgs[i]->start, threadArgs[i]->size);
-
         // Create thread
         if (pthread_create(&threads[i], NULL, runThread, (void *)threadArgs[i]) != 0)
         {
@@ -241,10 +127,29 @@ int main(int argc, char *argv[])
         }
     }
 
+    for (int i = 0; i < NUMTHREADS - 1; i++)
+    {
+        int array_size_1 = results[i].size - 1;
+        int array_size_2 = results[i + 1].size - 1;
+        printf("thread id: %i, \n%c  %c\n", i, results[i].list[array_size_1]->letter, results[i + 1].list[0]->letter);
+
+        if (results[i].list[array_size_1]->letter == results[i + 1].list[0]->letter)
+        {
+            printf("thread id: %i, \n%c\n", i, results[i].list[array_size_1]->letter);
+            results[i + 1].list[0]->number += results[i].list[array_size_1]->number;
+            results[i].list[array_size_1]->number = -1000;
+        }
+    }
+
     for (int i = 0; i < NUMTHREADS; i++)
     {
+
         for (int k = 0; k < results[i].size; k++)
         {
+            if (results[i].list[k]->number == -1000)
+            {
+                continue;
+            }
 
             printf(" \n thread id:%i hell %c  %i \n ", i, results[i].list[k]->letter, results[i].list[k]->number);
         }
