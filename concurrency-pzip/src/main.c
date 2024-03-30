@@ -35,12 +35,8 @@ void showCpuCores()
 void *runThread(void *arg)
 {
     ThreadArgs *args = (ThreadArgs *)arg;
-    // printf("address %p\n", &args->size);
-    // printf("\nprint sizes %zu\n", (size_t)args->size);
-    // printf("\n thread id: %i \n", args->thread_id);
-    // printf("\n string: %s \n", args->start);
     compress(&results[args->thread_id], args->start, &result_mutex);
-
+    free(args);
     return NULL;
 }
 
@@ -77,7 +73,6 @@ int main(int argc, char *argv[])
     close(fd);
 
     size_t chunkSize = sb.st_size / NUMTHREADS;
-    printf("chunksize %zu", chunkSize);
     pthread_t threads[NUMTHREADS];
     ThreadArgs *threadArgs[NUMTHREADS];
     for (int i = 0; i < NUMTHREADS; i++)
@@ -131,11 +126,9 @@ int main(int argc, char *argv[])
     {
         int array_size_1 = results[i].size - 1;
         int array_size_2 = results[i + 1].size - 1;
-        printf("thread id: %i, \n%c  %c\n", i, results[i].list[array_size_1]->letter, results[i + 1].list[0]->letter);
 
         if (results[i].list[array_size_1]->letter == results[i + 1].list[0]->letter)
         {
-            printf("thread id: %i, \n%c\n", i, results[i].list[array_size_1]->letter);
             results[i + 1].list[0]->number += results[i].list[array_size_1]->number;
             results[i].list[array_size_1]->number = -1000;
         }
@@ -143,7 +136,6 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < NUMTHREADS; i++)
     {
-
         for (int k = 0; k < results[i].size; k++)
         {
             if (results[i].list[k]->number == -1000)
@@ -153,6 +145,7 @@ int main(int argc, char *argv[])
 
             printf(" \n thread id:%i hell %c  %i \n ", i, results[i].list[k]->letter, results[i].list[k]->number);
         }
+        freeReturnArgs(results[i]);
     }
     // Unmap the file from memory
     if (munmap(mapped, sb.st_size) == -1)
