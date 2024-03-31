@@ -13,7 +13,7 @@
 #include "../header/threadHelpers.h"
 
 #define LISTSIZE 2048
-#define NUMTHREADS 4
+#define NUMTHREADS 100
 
 ThreadReturnArgs results[NUMTHREADS];
 pthread_mutex_t result_mutex;
@@ -42,6 +42,7 @@ void *runThread(void *arg)
 
 int main(int argc, char *argv[])
 {
+
     showCpuCores();
     // read file using mmap
     int fd;
