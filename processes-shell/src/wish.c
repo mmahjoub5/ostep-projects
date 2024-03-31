@@ -133,10 +133,7 @@ int main(int agrc, char *argv[])
 
         if (read != -1)
         {
-            if (strcmp("exit\n", line) == 0)
-            {
-                exit(0);
-            }
+           
             numCLIArgs = parseInput(cmd_argv, line);
             if (numCLIArgs == -1)
             {

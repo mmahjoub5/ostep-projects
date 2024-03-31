@@ -45,15 +45,16 @@ bool checkIfShellCommand(char **command, char *paths[PATHNAMESIZE])
         {
             // printf("add path to command %s\n", tempCommand);
             free(*command);
-            printf("%s\n", tempCommand);
-
+            //printf("%s\n", tempCommand);
+    
             *command = strdup(tempCommand);
             free(tempCommand);
-            printf("%s\n", *command);
+            //printf("%s\n", *command);
             // printf("add path to command %s\n", *command);
             return true;
         }
         free(tempCommand);
+
     }
     return false;
 }
