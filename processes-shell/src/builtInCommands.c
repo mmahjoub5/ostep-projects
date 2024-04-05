@@ -4,8 +4,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include "shellCommands.h"
-#include <ctype.h> 
-
+#include <ctype.h>
 
 static void builtin_cd(char **cmd_argv, int numCLIArgs)
 {
