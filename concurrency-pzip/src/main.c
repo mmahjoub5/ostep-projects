@@ -8,17 +8,23 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#ifdef __APPLE__
 #include <sys/sysctl.h>
+#elif __linux__
+#include <sys/sysinfo.h>
+#endif
+
 #include "../header/parser.h"
 #include "../header/threadHelpers.h"
 
 #define LISTSIZE 2048
-#define NUMTHREADS 100
+#define NUMTHREADS 1
 
 ThreadReturnArgs results[NUMTHREADS];
 pthread_mutex_t result_mutex;
 void showCpuCores()
 {
+    #ifdef __APPLE__
     int numCPU;
     size_t len = sizeof(numCPU);
 
@@ -28,8 +34,14 @@ void showCpuCores()
         perror("sysctl");
         exit(1);
     }
-
     printf("Number of CPU cores: %d\n", numCPU);
+    #elif __linux_
+    printf("This system has %d processors configured and "
+                   "%d processors available.\n",
+                   get_nprocs_conf(), get_nprocs());
+    #endif
+
+    
 }
 
 void *runThread(void *arg)
@@ -39,6 +51,8 @@ void *runThread(void *arg)
     free(args);
     return NULL;
 }
+
+
 
 int main(int argc, char *argv[])
 {
