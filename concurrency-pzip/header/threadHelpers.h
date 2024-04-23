@@ -17,11 +17,12 @@ typedef struct ThreadArgs_struct
     int thread_id;
 } ThreadArgs;
 
-typedef struct ThreadReturnArgs_struct
+typedef struct ThreadReturnArgs
 {
     compressedNode **list;
     size_t capacity;
     size_t size;
+    struct ThreadReturnArgs *next;
 } ThreadReturnArgs;
 
 ThreadReturnArgs initializeThreadReturnArgs();

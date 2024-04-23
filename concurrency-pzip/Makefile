@@ -1,18 +1,23 @@
 CC = gcc
-CFLAGS = -g
+CFLAGS =   -g  -pthread -O #-fsanitize=address
 file ?= hello.txt
-TARGET = my_program
+TARGET = blocked_concurrent
+TARGET1 = pc_concurrent
 TEST_TARGET = test_program
 PERF = perf
 admin = sudo
 SRC_MAIN = src/main.c
-SRC_TEST ?= tests/threadHelperUnitTests.c
-SRCS_HELPERS =  src/parser.c src/threadHelpers.c
+SRC_MAIN1 = src/pc_main.c
+SRC_TEST ?= tests/UnitTests.c
+SRCS_HELPERS =  src/parser.c src/threadHelpers.c src/global_vars.c src/Queue.c src/producerConsumer.c
 
-all: $(TARGET)
+all: $(TARGET) $(TARGET1) 
 
 $(TARGET): $(SRC_MAIN) $(SRCS_HELPERS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRC_MAIN) $(SRCS_HELPERS)
+
+$(TARGET1): $(SRC_MAIN) $(SRCS_HELPERS)
+	$(CC) $(CFLAGS) -o $(TARGET1) $(SRC_MAIN1) $(SRCS_HELPERS)
 
 profile: $(TARGET)
 	$(admin) $(PERF) record ./$(TARGET) $(file)
@@ -27,4 +32,4 @@ test: $(TEST_TARGET)
 	./$(TEST_TARGET)
 
 clean:
-	rm -f $(TARGET) $(TEST_TARGET)
+	rm -f $(TARGET) $(TEST_TARGET) $(TARGET1) 

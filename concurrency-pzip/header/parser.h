@@ -16,6 +16,6 @@ typedef struct compressedNode_Struct
 } compressedNode;
 
 compressedNode *initializeCompressedNode(int number, char letter);
-void compress(ThreadReturnArgs *returnArgs, char *str, pthread_mutex_t *result_matrix);
+void compress(ThreadReturnArgs *returnArgs, char *str);
 
 #endif

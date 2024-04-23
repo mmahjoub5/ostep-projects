@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include "../header/threadHelpers.h"
 #include "../header/parser.h"
+#include "../header/Queue.h"
+#include "../header/producerConsumer.h"
+#include <assert.h>
+#include <pthread.h>
 // Define the structures used by the function
 
 // Test function
@@ -60,10 +64,89 @@ void add_multiple_loop(int num)
     free(nodes);
 }
 
+void enque_test()
+{
+    Queue *q = (Queue *)malloc(sizeof(Queue));
+    INIT_QUEUE(q);
+    Page *p = malloc(sizeof(Page));
+    ENQUEUE(q, p);
+
+    free(q);
+    free(p);
+}
+
+void fill_queue(int num)
+{
+    Queue *q = (Queue *)malloc(sizeof(Queue));
+    INIT_QUEUE(q);
+    Page *p = malloc(sizeof(Page) * num);
+
+    for (int i = 0; i < num; i++)
+    {
+        ENQUEUE(q, &p[i]);
+    }
+    if (q->size != num)
+    {
+        printf("QUEUE  SIZE WRONG %i\n", q->size);
+    }
+
+    free(q);
+    free(p);
+}
+
+void fill_empty_queue(int num)
+{
+    Queue *q = (Queue *)malloc(sizeof(Queue));
+    INIT_QUEUE(q);
+    Page *p = malloc(sizeof(Page) * num);
+
+    for (int i = 0; i < num; i++)
+    {
+        ENQUEUE(q, &p[i]);
+    }
+    if (q->size != num)
+    {
+        printf("QUEUE  SIZE WRONG %i\n", q->size);
+    }
+    for (int i = 0; i < num; i++)
+    {
+        void *temp = DEQUEUE(q, void);
+    }
+    if (q->size != 0)
+    {
+        printf("QUEUE  SIZE WRONG %i\n", q->size);
+    }
+
+    free(q);
+    free(p);
+}
+
+void deque_test()
+{
+    Queue *q = (Queue *)malloc(sizeof(Queue));
+    INIT_QUEUE(q);
+    Page *p = malloc(sizeof(Page));
+    p->pageNum = 10;
+    ENQUEUE(q, p);
+    assert(q->size == 1);
+    p = DEQUEUE(q, Page);
+    assert(q->size == 0);
+    assert(p->pageNum == 10);
+
+    free(q);
+    free(p);
+}
+
 int main()
 {
-    test_addToThreadReturnArgs();
-    add_multiple_loop(15);
+    // test_addToThreadReturnArgs();
+    // add_multiple_loop(15);
+    // fill_queue(5);
+    // deque_test();
+
+    // fill_empty_queue(10);
+
     printf("Tests complete.\n");
+
     return 0;
 }

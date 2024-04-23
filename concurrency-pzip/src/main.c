@@ -17,14 +17,18 @@
 #include "../header/parser.h"
 #include "../header/threadHelpers.h"
 
+#include "../header/producerConsumer.h"
+#include "../header/global_vars.h"
+#include "../header/Queue.h"
 #define LISTSIZE 2048
 #define NUMTHREADS 1
 
 ThreadReturnArgs results[NUMTHREADS];
 pthread_mutex_t result_mutex;
+
 void showCpuCores()
 {
-    #ifdef __APPLE__
+#ifdef __APPLE__
     int numCPU;
     size_t len = sizeof(numCPU);
 
@@ -35,24 +39,20 @@ void showCpuCores()
         exit(1);
     }
     printf("Number of CPU cores: %d\n", numCPU);
-    #elif __linux_
+#elif __linux_
     printf("This system has %d processors configured and "
-                   "%d processors available.\n",
-                   get_nprocs_conf(), get_nprocs());
-    #endif
-
-    
+           "%d processors available.\n",
+           get_nprocs_conf(), get_nprocs());
+#endif
 }
 
 void *runThread(void *arg)
 {
     ThreadArgs *args = (ThreadArgs *)arg;
-    compress(&results[args->thread_id], args->start, &result_mutex);
+    compress(&results[args->thread_id], args->start);
     free(args);
     return NULL;
 }
-
-
 
 int main(int argc, char *argv[])
 {

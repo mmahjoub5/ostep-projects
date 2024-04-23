@@ -1,4 +1,6 @@
 
+docker run -it -v /Users/aminmahjoub/ostep-projects/concurrency-pzip:/project  ubuntu-with-valgrind 
+
 # Parallel Zip
 
 In an earlier project, you implemented a simple compression tool based on

@@ -1,5 +1,15 @@
 {
     "files.associations": {
-        "sysinfo.h": "c"
-    }
+        "sysinfo.h": "c",
+        "threadhelpers.h": "c",
+        "__locale": "c",
+        "string": "c",
+        "string_view": "c",
+        "bitset": "c",
+        "fileio.h": "c",
+        "stat.h": "c",
+        "queue": "c",
+        "__node_handle": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
