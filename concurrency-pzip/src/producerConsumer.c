@@ -63,6 +63,10 @@ void *Producer2(void *arg)
             while (IS_FULL(args->q))
             {
                 printf("we are heere");
+                if (fileIndex + 1 == args->num_files && i + 1 == num_chunks)
+                {
+                    args->q->finished = 1;
+                }
                 pthread_cond_wait(&empty, &pc_lock);
             }
 
@@ -80,9 +84,11 @@ void *Producer2(void *arg)
         }
         close(fd);
     }
+    pthread_mutex_lock(&pc_lock);
     printf("\nwe are done reading the filee\n");
     args->q->finished = 1;
     pthread_cond_signal(&fill);
+    pthread_mutex_unlock(&pc_lock);
 }
 
 void ENQUE_WRAPPER(ThreadReturnArgs *compressedData, OutputBuffer *b)
@@ -98,21 +104,18 @@ void ENQUE_WRAPPER(ThreadReturnArgs *compressedData, OutputBuffer *b)
     compressedNode **list = b->Tail->list;
     if (list[size]->letter == compressedData->list[0]->letter)
     {
-        printf("\n %c       %c", list[size]->letter, compressedData->list[0]->letter);
-        // printf("\n head value: %i input value : %i\n   ", list[size]->number, compressedData->list[0]->number);
-        // list[size]->number += compressedData->list[0]->number;
         if (compressedData->size > 1)
         {
             printf("there is another thing to add to queue, %c %i", compressedData->list[1]->letter, compressedData->list[1]->number);
-            free(compressedData->list[0]); // Free memory of the first element
+            safe_free((void **)&compressedData->list[0]); // Free memory of the first element
             compressedData->list++;
             compressedData->size--;
             ENQUEUE(b, compressedData);
         }
         else
         {
-            free(compressedData->list);
-            free(compressedData);
+            safe_free((void **)&compressedData->list);
+            safe_free((void **)&compressedData);
         }
     }
     else
@@ -137,14 +140,18 @@ void *Consumer(void *arg)
         printf("\nCONSUMER THREAD ID: %i is locking \n", args->id);
         while (IS_EMPTY(q))
         {
-            printf("\nprint is finishde %i \n", q->finished);
-            printf("\nCONSUMER THREAD ID: %i is PUT TO SLEEP \n", args->id);
-            if (q->finished)
+
+            // printf("\nCONSUMER THREAD ID: %i is PUT TO SLEEP \n", args->id);
+            printf("\nwe are sleeeping:     %i      is q finished: %i \n", args->id, q->finished);
+            if (q->finished == 1)
             {
+                printf("\nprint is finishde %i \n", q->finished);
+                // jank solutiion but wakes up sleeping consumer threads
+                pthread_cond_signal(&fill);
                 pthread_mutex_unlock(&pc_lock);
                 return NULL;
             }
-            printf("\nwe are sleeeping:     %i\n", args->id);
+            printf("\nwe are sleeeping:     %i      is q finished: %i \n", args->id, q->finished);
             pthread_cond_wait(&fill, &pc_lock);
         }
 
@@ -166,9 +173,10 @@ void *Consumer(void *arg)
         compressedData->capacity = 0;
         compressedData->size = 0;
         compressedData->list = NULL;
+        compressedData->next = NULL;
         compress(compressedData, node->data);
 
-        free(node);
+        safe_free((void **)&node);
         ENQUE_WRAPPER(compressedData, outBuffer);
 
         // this should directly write to a file so change the std output

@@ -5,8 +5,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <errno.h>
 
+#include <errno.h>
+#include "global_vars.h"
 // Forward declaration of the compressedNode struct
 typedef struct compressedNode_Struct compressedNode;
 

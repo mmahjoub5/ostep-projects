@@ -28,9 +28,12 @@ int main()
 
     INIT_QUEUE(q);
     INIT_QUEUE(outputBuffer);
+    // producerArgs->file_names[0] = "hello.txt";
     producerArgs->file_names[0] = "hello.txt";
-    // producerArgs->file_names[1] = "anothertest.txt";
-    producerArgs->num_files = 1;
+    producerArgs->file_names[2] = "main.txt";
+    producerArgs->file_names[1] = "test2.txt";
+
+    producerArgs->num_files = 3;
     /*
         one producer
         one consumer
@@ -63,7 +66,7 @@ int main()
             exit(EXIT_FAILURE);
         }
     }
-
+    printf("\nthreads stopped runnign\n");
     while (outputBuffer->size != 0)
     {
         ThreadReturnArgs *compressedData = DEQUEUE(outputBuffer, ThreadReturnArgs);
@@ -74,17 +77,40 @@ int main()
             {
                 printf("\nwe have white space in this\n");
             }
-            printf(" \nhere:  %c  %i \n ", list[k]->letter, list[k]->number);
+            // printf(" \nhere:  %c  %i \n ", list[k]->letter, list[k]->number);
         }
-        freeReturnArgs(*compressedData);
-        free(compressedData);
+        if (compressedData != NULL)
+        {
+            freeReturnArgs(*compressedData);
+            safe_free((void **)&compressedData);
+        }
     }
 
-    free(q);
-    free(producerArgs);
-    free(consumerArgs2);
-    free(consumerArgs);
-    free(outputBuffer);
+    safe_free((void **)&q);
+    safe_free((void **)&producerArgs);
+    safe_free((void **)&consumerArgs2);
+    safe_free((void **)&consumerArgs);
+    safe_free((void **)&outputBuffer);
 
     return 0;
 }
+
+// void *printToFile(void *arg)
+// {
+
+//     while (outputBuffer->size != 0)
+//     {
+//         ThreadReturnArgs *compressedData = DEQUEUE(outputBuffer, ThreadReturnArgs);
+//         compressedNode **list = compressedData->list;
+//         for (int k = 0; k < compressedData->size; k++)
+//         {
+//             if (isspace(list[k]->letter))
+//             {
+//                 printf("\nwe have white space in this\n");
+//             }
+//             printf(" \nhere:  %c  %i \n ", list[k]->letter, list[k]->number);
+//         }
+//         freeReturnArgs(*compressedData);
+//         free(compressedData);
+//     }
+// }

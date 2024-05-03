@@ -44,7 +44,8 @@ void freeReturnArgs(ThreadReturnArgs returnArgs)
 {
     for (int i = 0; i < returnArgs.size; i++)
     {
-        free(returnArgs.list[i]);
+        safe_free((void **)&returnArgs.list[i]);
     }
-    free(returnArgs.list);
+
+    safe_free((void **)&returnArgs.list);
 }

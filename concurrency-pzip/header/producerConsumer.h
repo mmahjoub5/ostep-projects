@@ -33,4 +33,5 @@ void *
 Producer(void *arg);
 void *Consumer(void *arg);
 void *Producer2(void *arg);
+// ProducerArgs* producerArgs_init(Queue* q, int id, int num_files, char*fil)
 #endif

@@ -4,8 +4,9 @@
 #include "global_vars.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define CHAR_BUFFER_SZ 256
-
+#define CHAR_BUFFER_SZ 1024
+#define MAX_Q 100
+#define MIN_Q 0
 typedef struct Page
 {
     /* data */
@@ -34,7 +35,7 @@ typedef struct
     int size;
 } OutputBuffer;
 
-#define MAX_Q_SIZE 10
+#define MAX_Q_SIZE 100
 // void initQueue(Queue *q);
 // void enque(Queue *queue, void *node);
 // Page *dequeu(Queue *queue);
@@ -87,8 +88,8 @@ typedef struct
         nodeToReturn;                                                         \
     })
 
-#define IS_FULL(q) ((q)->size == 100 ? 1 : 0)
+#define IS_FULL(q) ((q)->size == MAX_Q ? 1 : 0)
 
-#define IS_EMPTY(q) ((q)->size == 0 ? 1 : 0)
+#define IS_EMPTY(q) ((q)->size == MIN_Q ? 1 : 0)
 
 #endif
