@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS =   -g  -pthread -O #-fsanitize=address
+CFLAGS =   -g  -Wall -pthread -O -fsanitize=leak
 file ?= hello.txt
 TARGET = blocked_concurrent
 TARGET1 = pc_concurrent

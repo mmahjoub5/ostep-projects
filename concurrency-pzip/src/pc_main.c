@@ -29,8 +29,8 @@ int main()
     INIT_QUEUE(q);
     INIT_QUEUE(outputBuffer);
     // producerArgs->file_names[0] = "hello.txt";
-    producerArgs->file_names[0] = "hello.txt";
-    producerArgs->file_names[2] = "main.txt";
+    producerArgs->file_names[2] = "hello.txt";
+    producerArgs->file_names[0] = "main.txt";
     producerArgs->file_names[1] = "test2.txt";
 
     producerArgs->num_files = 3;
@@ -67,23 +67,24 @@ int main()
         }
     }
     printf("\nthreads stopped runnign\n");
+    int w = 0;
     while (outputBuffer->size != 0)
     {
         ThreadReturnArgs *compressedData = DEQUEUE(outputBuffer, ThreadReturnArgs);
         compressedNode **list = compressedData->list;
         for (int k = 0; k < compressedData->size; k++)
         {
-            if (isspace(list[k]->letter))
-            {
-                printf("\nwe have white space in this\n");
-            }
-            // printf(" \nhere:  %c  %i \n ", list[k]->letter, list[k]->number);
+
+            printf(" \nhere:  %c  %i \n ", list[k]->letter, list[k]->number);
         }
+        // printf("\nmemory addres of list: %p i\n", (void *)list);
+        // printf("\n %zu node number %i\n", sizeof(list), w);
         if (compressedData != NULL)
         {
             freeReturnArgs(*compressedData);
             safe_free((void **)&compressedData);
         }
+        w++;
     }
 
     safe_free((void **)&q);

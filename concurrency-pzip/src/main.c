@@ -140,7 +140,6 @@ int main(int argc, char *argv[])
     for (int i = 0; i < NUMTHREADS - 1; i++)
     {
         int array_size_1 = results[i].size - 1;
-        int array_size_2 = results[i + 1].size - 1;
 
         if (results[i].list[array_size_1]->letter == results[i + 1].list[0]->letter)
         {

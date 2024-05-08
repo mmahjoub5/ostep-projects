@@ -17,7 +17,7 @@ void *Producer2(void *arg)
         int fd;
         struct stat sb;
         fd = open(args->file_names[fileIndex], O_RDWR);
-        off_t offset = 0;
+
         if (fd == -1)
         {
             perror("open");
@@ -47,8 +47,16 @@ void *Producer2(void *arg)
         {
 
             Page *page = (Page *)malloc(sizeof(Page));
+            if (page == NULL)
+            {
+                fprintf(stderr, "QUUE RETURNED NULL\n");
+                exit(EXIT_FAILURE);
+            }
             page->pageNum = i;
             page->filenum = 0;
+            page->size = 0;
+            page->next = NULL;
+
             if (i == num_chunks - 1)
             {
                 page->size = fileSize - (i * CHUNK_SIZE);
@@ -89,14 +97,17 @@ void *Producer2(void *arg)
     args->q->finished = 1;
     pthread_cond_signal(&fill);
     pthread_mutex_unlock(&pc_lock);
+    return NULL;
 }
 
 void ENQUE_WRAPPER(ThreadReturnArgs *compressedData, OutputBuffer *b)
 {
+    pthread_mutex_lock(&q_lock);
     // QUUEUE EMPTY
     if (b->Tail == NULL)
     {
         ENQUEUE(b, compressedData);
+        pthread_mutex_unlock(&q_lock);
         return;
     }
 
@@ -122,6 +133,8 @@ void ENQUE_WRAPPER(ThreadReturnArgs *compressedData, OutputBuffer *b)
     {
         ENQUEUE(b, compressedData);
     }
+    pthread_mutex_unlock(&q_lock);
+    return;
 }
 
 void *Consumer(void *arg)
@@ -130,28 +143,25 @@ void *Consumer(void *arg)
     Queue *q = args->q;
     OutputBuffer *outBuffer = args->output;
     int k = 0;
-    pthread_mutex_t local_lock = PTHREAD_MUTEX_INITIALIZER;
+
     while (1)
     {
         k++;
-        // printf("\nCONSUMER THREAD ID: %i & Q Size %i\n", args->id, args->q->size);
 
         pthread_mutex_lock(&pc_lock);
-        printf("\nCONSUMER THREAD ID: %i is locking \n", args->id);
+
         while (IS_EMPTY(q))
         {
 
-            // printf("\nCONSUMER THREAD ID: %i is PUT TO SLEEP \n", args->id);
-            printf("\nwe are sleeeping:     %i      is q finished: %i \n", args->id, q->finished);
             if (q->finished == 1)
             {
-                printf("\nprint is finishde %i \n", q->finished);
-                // jank solutiion but wakes up sleeping consumer threads
+
+                //  jank solutiion but wakes up sleeping consumer threads
                 pthread_cond_signal(&fill);
                 pthread_mutex_unlock(&pc_lock);
                 return NULL;
             }
-            printf("\nwe are sleeeping:     %i      is q finished: %i \n", args->id, q->finished);
+            // printf("\nwe are sleeeping:     %i      is q finished: %i \n", args->id, q->finished);
             pthread_cond_wait(&fill, &pc_lock);
         }
 
@@ -175,8 +185,11 @@ void *Consumer(void *arg)
         compressedData->list = NULL;
         compressedData->next = NULL;
         compress(compressedData, node->data);
+        pthread_mutex_lock(&q_lock);
+        free(node);
+        node = NULL;
+        pthread_mutex_unlock(&q_lock);
 
-        safe_free((void **)&node);
         ENQUE_WRAPPER(compressedData, outBuffer);
 
         // this should directly write to a file so change the std output
@@ -185,7 +198,7 @@ void *Consumer(void *arg)
 
         pthread_mutex_unlock(&pc_lock);
 
-        printf("\nCONSUMER THREAD ID: %i is unlocking \n", args->id);
+        // printf("\nCONSUMER THREAD ID: %i is unlocking \n", args->id);
     }
 }
 
